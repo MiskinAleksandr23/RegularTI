@@ -1,6 +1,3 @@
-import random
-
-
 class DFA:
     def __init__(self, n: int, m: int):
         self.n = n
@@ -92,27 +89,49 @@ def MinimizeDFA(dfa: DFA) -> DFA:
                 result.add_transition(i, find_class_by_el(dfa.transitions[q_0][symbol]), symbol)
     return result
 
-
+def CheckFullLanguage(dfa: DFA):
+    min_dfa = MinimizeDFA(dfa)
+    if min_dfa.n > 1:
+        return False
+    for i in range(min_dfa.m):
+        if min_dfa.transitions[0][i] == -1:
+            return False
+    if not dfa.accepted[0]:
+        return False
+    return True
 
 def Test1():
     # 6 состояний, бьются на три группы по 2 так, что из одной группы в другую переходы одинаковые. Тогда каждую
     # группу можно отождествить с одной вершиной. Итого 3 вершины.
-    dfa_x = DFA(6, 2)
+    dfa_x = DFA(6, 3)
     l_groups = [[0, 1], [2, 3], [4, 5]]
     for i in range(3):
         for j in range(3):
             if i == j:
                 continue
-            p = random.randint(0, 1)
+
             for a in l_groups[i]:
                 for b in l_groups[j]:
-                    dfa_x.add_transition(a, b, p)
+                    dfa_x.add_transition(a, b, (i + j) % 3)
     dfa_y = MinimizeDFA(dfa_x)
+
     if dfa_y.n != 3:
         raise Exception("Test 1 failed")
 
+def TestFullLanguage():
+    dfa_x = DFA(6, 3)
+    for i in range(6):
+        for j in range(6):
+            for p in range(3):
+                dfa_x.add_transition(i, j, p)
+    dfa_x.start = 0
+    dfa_x.accepted = [True for i in range(6)]
+    min_dfa = MinimizeDFA(dfa_x)
+    if not CheckFullLanguage(min_dfa):
+        raise Exception("Test 2 failed")
 
 Test1()
+TestFullLanguage()
 
 
 
