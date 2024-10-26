@@ -1,3 +1,5 @@
+import queue
+
 class DFA:
     def __init__(self, n: int, m: int):
         self.n = n
@@ -89,6 +91,27 @@ def MinimizeDFA(dfa: DFA) -> DFA:
                 result.add_transition(i, find_class_by_el(dfa.transitions[q_0][symbol]), symbol)
     return result
 
+
+def EqualDfa(dfa1: DFA, dfa2: DFA):
+    if dfa1.n != dfa2.n or dfa1.m != dfa2.m:
+        return False
+    q = queue.Queue()
+    q.put((dfa1.start, dfa2.start))
+    used = [[False for i in range(dfa1.n)] for j in range(dfa1.n)]
+    while not q.empty():
+        u, v = q.get()
+        if dfa1.accepted[u] != dfa2.accepted[v]:
+            return False
+        used[u][v] = True
+        for sym in range(dfa1.m):
+            if (dfa1.transitions[u][sym], dfa2.transitions[v][sym]) == (-1, -1):
+                continue
+            elif dfa1.transitions[u][sym] == -1 or dfa2.transitions[v][sym] == -1:
+                return False
+            else:
+                q.put((dfa1.transitions[u][sym], dfa2.transitions[v][sym]))
+    return True
+
 def CheckFullLanguage(dfa: DFA):
     min_dfa = MinimizeDFA(dfa)
     if min_dfa.n > 1:
@@ -118,6 +141,8 @@ def Test1():
     if dfa_y.n != 3:
         raise Exception("Test 1 failed")
 
+
+
 def TestFullLanguage():
     dfa_x = DFA(6, 3)
     for i in range(6):
@@ -130,10 +155,32 @@ def TestFullLanguage():
     if not CheckFullLanguage(min_dfa):
         raise Exception("Test 2 failed")
 
+def TestEqualDfa():
+    dfa_x = DFA(6, 3)
+    dfa_y = DFA(6, 3)
+    if not EqualDfa(dfa_x, dfa_y):
+        raise Exception("Test 3 failed")
+
+def Create_dfa(n: int, m: int, start: int, accepted: [bool], list_transitions):
+    # list_transitions = [(from, to, symbol)]
+    dfa = DFA(n, m)
+    dfa.accepted = accepted
+    dfa.start = start
+    for (u, v, w) in list_transitions:
+        dfa.add_transition(u, v, w)
+    return dfa
+
+#Example
+example_dfa = Create_dfa(3, 2, 0, [False, False, True], [(0, 1, 1), (0, 2, 0), (1, 2, 1)])
+
+
+def CustomTest():
+    pass
+
+
 Test1()
 TestFullLanguage()
-
-
-
+TestEqualDfa()
+CustomTest()
 
 
