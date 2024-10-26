@@ -140,3 +140,11 @@ for (a, b, c) in TESTS:
     if X.match(b) != c:
         print(a, b, c)
         raise Exception(f'WA test {cnt}')
+
+def test_single(regex: str, string: str):
+    vm_x = RegexVM(regex)
+    print(vm_x.match(string))
+
+#Протестировать можно расскоментировав функцию ниже
+
+#test_single("a+b+", "aaabb")
