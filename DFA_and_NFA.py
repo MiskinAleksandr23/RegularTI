@@ -161,6 +161,7 @@ def TestEqualDfa():
     if not EqualDfa(dfa_x, dfa_y):
         raise Exception("Test 3 failed")
 
+#Пример
 def Create_dfa(n: int, m: int, start: int, accepted: [bool], list_transitions):
     # list_transitions = [(from, to, symbol)]
     dfa = DFA(n, m)
