@@ -1,9 +1,31 @@
-from antlr4 import InputStream, CommonTokenStream
+from antlr4 import InputStream, CommonTokenStream, RecognitionException
+from antlr4.error.ErrorListener import ErrorListener
+
 from gen.RegexLexer import RegexLexer
 from gen.RegexParser import RegexParser
 from gen.RegexVisitor import RegexVisitor
 from logging import exception
 import copy
+
+class CollectingErrorListener(ErrorListener):
+    def __init__(self):
+        super().__init__()
+        self.errors = []
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        self.errors.append(f"Syntax error at line {line}, column {column}: {msg}")
+
+
+def is_regex_valid(regex):
+    input_stream = InputStream(regex)
+    lexer = RegexLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = RegexParser(token_stream)
+    error_listener = CollectingErrorListener()
+    parser.removeErrorListeners()
+    parser.addErrorListener(error_listener)
+    parser.regex()
+    return len(error_listener.errors) == 0
 
 class RegexVirtualMachine:
     def __init__(self, regex):
@@ -53,7 +75,30 @@ class RegexVirtualMachine:
         return False
 
     def matches(self, string):
-        return self.parse_str(string)
+        return self.parse_str(string) and is_regex_valid(self.regex)
+
+
+
+def test_regular():
+    tests = [
+        ('(a|b)*)+', False),
+        ('(a|ba)*', True),
+        ('a|b)', False),
+        ('(a|b', False),
+        ('((a|b)*)+', True),
+        ('(a|b)+*', False),
+        ('(a|b)?+', False),
+        ('a*|b+', True),
+        ('((a|b)a)*', True),
+        ('((a|b)|a)', True),
+        ('((a|b))*+', False)
+    ]
+    for (a, b) in tests:
+        if is_regex_valid(a) != b:
+            print(a, b, is_regex_valid(a))
+            raise Exception("WA")
+
+
 
 
 def test():
@@ -87,4 +132,5 @@ def local_test(regex, string):
 
 if __name__ == "__main__":
     test()
+    test_regular()
     local_test("((ab)*)(b*)", "abb")
